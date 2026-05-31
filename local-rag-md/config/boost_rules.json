@@ -1,0 +1,7 @@
+[
+  {"field": "path", "op": "contains", "value": "integrations/whatsapp.md", "boost": 10},
+  {"field": "heading", "op": "contains", "value": "workflow catalog", "boost": 8},
+  {"field": "heading", "op": "contains", "value": "whatsapp workflows", "boost": 6},
+  {"field": "content", "op": "contains", "value": "whatsapp trigger", "boost": 4},
+  {"field": "content", "op": "contains", "value": "workflows detected", "boost": 2}
+]

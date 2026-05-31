@@ -1,0 +1,12 @@
+PyQt6
+opencv-python
+cvzone
+mediapipe
+numpy
+google-generativeai
+edge-tts
+speechrecognition
+pyaudio
+pyautogui
+pygame
+requests

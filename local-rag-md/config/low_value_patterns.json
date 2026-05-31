@@ -1,0 +1,7 @@
+[
+  {"field": "content", "op": "starts_with", "value": "---", "extra": "source: eira brain chat"},
+  {"field": "path", "op": "ends_with", "value": "\\07-ideas\\templates_de_n8n_para_whatsapp.md"},
+  {"field": "heading", "op": "eq", "value": "document", "require_content_start": "---"},
+  {"field": "content", "op": "eq_compact", "value": "templates de n8n para whatsapp"},
+  {"field": "content", "op": "eq_compact", "value": "template de n8n para whatsapp"}
+]

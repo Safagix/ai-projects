@@ -1,0 +1,27 @@
+{
+  "antigravity": {
+    "description": "Abre Antigravity desde el acceso directo del menu Inicio.",
+    "target": "C:\\Users\\safag\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Antigravity\\Antigravity.lnk",
+    "type": "path"
+  },
+  "youtube_music": {
+    "description": "Abre el instalador local de YouTube Music en Digital Lab.",
+    "target": "D:\\Digital Lab\\YouTube-Music-3.11.0.exe",
+    "type": "path"
+  },
+  "digital_lab": {
+    "description": "Abre la carpeta principal Digital Lab.",
+    "target": "D:\\Digital Lab",
+    "type": "path"
+  },
+  "everything": {
+    "description": "Abre Everything para buscar archivos locales.",
+    "target": "C:\\Program Files\\Everything\\Everything.exe",
+    "type": "path"
+  },
+  "powertoys": {
+    "description": "Abre PowerToys.",
+    "target": "C:\\Program Files\\PowerToys\\PowerToys.exe",
+    "type": "path"
+  }
+}

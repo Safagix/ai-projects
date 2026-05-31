@@ -1,0 +1,26 @@
+{
+    "name": "heira",
+    "version": "1.0.0",
+    "description": "Heira - Agente de IA Personal en Telegram",
+    "main": "dist/index.js",
+    "type": "module",
+    "scripts": {
+        "dev": "tsx watch src/index.ts",
+        "serve": "tsx src/index.ts",
+        "build": "tsc",
+        "start": "node dist/index.js"
+    },
+    "dependencies": {
+        "better-sqlite3": "^11.5.0",
+        "dotenv": "^16.4.5",
+        "grammy": "^1.30.0",
+        "groq-sdk": "^0.7.0",
+        "playwright": "^1.55.0"
+    },
+    "devDependencies": {
+        "@types/better-sqlite3": "^7.6.11",
+        "@types/node": "^22.5.5",
+        "tsx": "^4.19.1",
+        "typescript": "^5.6.2"
+    }
+}

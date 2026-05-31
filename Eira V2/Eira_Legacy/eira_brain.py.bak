@@ -1,0 +1,148 @@
+import asyncio
+import edge_tts
+import os
+import speech_recognition as sr
+import pygame
+import time
+import requests
+import json
+import re
+import noisereduce as nr
+import numpy as np
+
+# --- CONFIGURATION FOR EIRA V2 ---
+# AUTOMATION OVERRIDE: User is running LM Studio manually on 1234.
+USE_LM_STUDIO = True 
+LM_STUDIO_URL = "http://localhost:1234/v1"
+TARGET_MODEL = "qwen2.5:3b"
+
+ANYTHING_LLM_URL = "http://localhost:3001/api/v1" 
+ANYTHING_LLM_KEY = os.environ.get("ANYTHING_LLM_KEY", "YOUR_API_KEY") 
+
+# Import the new Skill Manager
+from skills.skill_manager import SkillLoader
+
+if USE_LM_STUDIO:
+    from openai import OpenAI
+    # Point to OLLAMA pretending to be LM Studio
+    client = OpenAI(base_url=LM_STUDIO_URL, api_key="ollama")
+
+class AnythingLLMClient:
+    """Connector for AnythingLLM RAG features"""
+    def __init__(self, base_url, api_key):
+        self.base_url = base_url
+        self.headers = {"Authorization": f"Bearer {api_key}"}
+    
+    def query(self, prompt):
+        # Placeholder for actual AnythingLLM API chat endpoint
+        pass
+
+class EiraAssistant:
+    def __init__(self):
+        print("\n🔵 EIRA V3 (MODULAR BRAIN) INITIALIZING...")
+        
+        # 0. Setup Paths to ProjectStarlight
+        import sys
+        starlight_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../ProjectStarlight"))
+        if starlight_path not in sys.path:
+            sys.path.append(starlight_path)
+            
+        # 1. Start Mobile Server & Load New Brain
+        try:
+            from skills.system.server import server
+            print("🧠 BRAIN: Connecting to Modular Hybrid Router...")
+            
+            # Start the Web Server (Phone connectivity)
+            server.start_server_thread()
+            
+            # Hook into the Brain
+            self.router = server.router
+            self.loader = server.loader
+            print("🚀 Mobile Server: ONLINE (http://192.168.0.x:5000)")
+            
+        except ImportError as e:
+            print(f"❌ CRITICAL ERROR: Could not load Modular Brain: {e}")
+            self.router = None
+
+        # 2. Setup Ears & Mouth (Preserve Legacy Hardware)
+        self.recognizer = sr.Recognizer()
+        try:
+            pygame.mixer.init()
+            print("🔊 Audio System: Online")
+        except Exception as e:
+            print(f"🔊 Audio System Error: {e}")
+            
+        self.cleanup_temp_files()
+
+    def cleanup_temp_files(self):
+        try:
+            for file in os.listdir():
+                if file.startswith("voice_") and file.endswith(".mp3"):
+                    try: os.remove(file)
+                    except: pass
+        except: pass
+
+    def load_memory(self):
+        return "" # Deprecated for now or move to new system
+
+    async def speak(self, text):
+        """Synthesize text to speech (Legacy Edge TTS)."""
+        import random
+        output_file = f"voice_{int(time.time())}_{random.randint(0,1000)}.mp3"
+        absolute_path = os.path.abspath(output_file)
+        VOICE = 'es-MX-DaliaNeural'
+        
+        try:
+            communicate = edge_tts.Communicate(text, VOICE)
+            await communicate.save(output_file)
+            
+            pygame.mixer.music.load(absolute_path)
+            pygame.mixer.music.play()
+            while pygame.mixer.music.get_busy():
+                pygame.time.Clock().tick(10)
+            pygame.mixer.music.unload()
+            time.sleep(0.3)
+        except Exception as e:
+            print(f"❌ Audio Error: {e}")
+        
+        try:
+            if os.path.exists(output_file): os.remove(output_file)
+        except: pass
+
+    def listen(self):
+        """Listen to microphone (Legacy Google)."""
+        with sr.Microphone() as source:
+            print("Escuchando...")
+            self.recognizer.adjust_for_ambient_noise(source, duration=0.3)
+            try:
+                audio = self.recognizer.listen(source, timeout=5, phrase_time_limit=8)
+                text = self.recognizer.recognize_google(audio, language="es-ES")
+                print(f"User: {text}")
+                return text
+            except Exception:
+                return None
+
+    def think(self, user_text):
+        """Process text through Hybrid Router (New Brain)."""
+        if not user_text or not self.router: return None
+        
+        print(f"🤔 Thinking about: '{user_text}'")
+        try:
+            # Delegate to the new Router
+            result = self.router.process(user_text)
+            
+            if result['type'] == 'skill':
+                intent = result['intent']
+                module = self.loader.get_action_module(intent['domain'], intent['skill'], intent['action'])
+                if module:
+                    exec_result = module.run({'utterance': user_text})
+                    return exec_result.get('text', "Action executed.")
+                return "Skill found but module missing."
+                
+            elif result['type'] == 'chat':
+                return result['response']
+                
+            return "I am not sure what to do."
+            
+        except Exception as e:
+            return f"Brain Error: {e}"

@@ -1,0 +1,73 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Capability for the main window",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:default",
+    "opener:default",
+    "http:default",
+    "fs:read-all",
+    "fs:write-all",
+    "fs:allow-remove",
+    "fs:allow-mkdir",
+    "fs:allow-copy-file",
+    "fs:allow-exists",
+    "fs:allow-stat",
+    {
+      "identifier": "shell:allow-execute",
+      "scope": {
+        "allow": [
+          {
+            "name": "powershell",
+            "cmd": "powershell.exe",
+            "args": [
+              {
+                "validator": ".*"
+              }
+            ]
+          },
+          {
+            "name": "cmd",
+            "cmd": "cmd.exe",
+            "args": [
+              {
+                "validator": ".*"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "identifier": "shell:allow-spawn",
+      "scope": {
+        "allow": [
+          {
+            "name": "powershell",
+            "cmd": "powershell.exe",
+            "args": [
+              {
+                "validator": ".*"
+              }
+            ]
+          },
+          {
+            "name": "cmd",
+            "cmd": "cmd.exe",
+            "args": [
+              {
+                "validator": ".*"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "core:window:allow-minimize",
+    "core:window:allow-maximize",
+    "core:window:allow-close"
+  ]
+}
