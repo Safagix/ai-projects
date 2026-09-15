@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "download_policy": "manual_after_benchmark",
+  "models": [
+    {
+      "id": "qwen2.5-vl-3b-instruct-q4",
+      "purpose": "offline_visual_brief_and_chat",
+      "source": "https://huggingface.co/Qwen/Qwen2.5-VL-3B-Instruct",
+      "license": "qwen-research-license",
+      "target_directory": "models/llm/qwen2.5-vl-3b-instruct-q4",
+      "runtime": "ollama_or_llama_cpp",
+      "load_profile": {"max_context_tokens": 4096, "max_vram_gb": 4.5, "exclusive_gpu": true},
+      "required": false
+    },
+    {
+      "id": "bge-m3",
+      "purpose": "multilingual_text_retrieval",
+      "source": "https://huggingface.co/BAAI/bge-m3",
+      "license": "MIT",
+      "target_directory": "models/embeddings/bge-m3",
+      "runtime": "FlagEmbedding_cpu",
+      "load_profile": {"max_workers": 1, "device": "cpu", "batch_size": 1, "expected_size_gb": 2.27},
+      "required": false
+    },
+    {
+      "id": "siglip2-base-patch16-256",
+      "purpose": "image_text_retrieval",
+      "source": "https://huggingface.co/google/siglip2-base-patch16-256",
+      "license": "Apache-2.0",
+      "target_directory": "models/vision/siglip2-base-patch16-256",
+      "runtime": "transformers_cpu",
+      "load_profile": {"device": "cpu", "exclusive_gpu": true},
+      "required": false
+    },
+    {
+      "id": "faster-whisper-base-int8",
+      "purpose": "offline_voice_commands",
+      "source": "https://huggingface.co/Systran/faster-whisper-base",
+      "license": "MIT",
+      "target_directory": "models/voice/faster-whisper-base",
+      "runtime": "faster-whisper",
+      "load_profile": {"device": "cpu", "compute_type": "int8", "cpu_threads": 4},
+      "required": false
+    }
+  ]
+}
