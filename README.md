@@ -21,6 +21,7 @@ Implementado en este primer corte:
 - Exportación SVG, PDF A4 tiled y Tech Pack PDF/XLSX.
 - Catálogo de modelos, capacidades locales y política de almacenamiento en `D:`.
 - Interfaz React/Three.js y servidor MCP preparados.
+- Chat local que convierte instrucciones acotadas en revisiones persistentes (componentes, materiales, medidas y modo).
 
 No se descargan pesos de IA automáticamente. Ejecutá el benchmark antes de descargar un modelo mediante `scripts\setup-local.ps1`.
 
@@ -34,6 +35,23 @@ Copy-Item .env.example .env
 ```
 
 Abrí `http://127.0.0.1:5173`. La API se documenta en `http://127.0.0.1:8000/docs`.
+Para desarrollo con recarga automática de la API: `./scripts/run-api.ps1 -Reload`.
+
+## Biblioteca privada y OCR local
+
+La carpeta privada `KNOWLEDGE_BASE_STUDIO` organiza libros, Tech Packs, materiales, moldes, diccionario visual y tablas de talles. Está excluida de Git y de Vercel. Para actualizar el índice textual:
+
+```powershell
+.\scripts\import-knowledge-base.ps1
+```
+
+Para un PDF escaneado, el OCR es explícito y local; conserva página y confianza media por fragmento:
+
+```powershell
+.\scripts\import-knowledge-base.ps1 -Ocr -MaxOcrPages 300
+```
+
+Después, iniciar **Reconstruir índice semántico** desde Studio. No correr OCR y BGE-M3 a la vez en este equipo.
 
 ## Vercel
 

@@ -1,58 +1,55 @@
 # Estado de implementación — 2026-09-15
 
-## Implementado y verificado
+## Entregado localmente
 
-- Raíz, cachés, entornos y artefactos confinados a `D:\Digital Lab\FashionCAD`.
-- API FastAPI, SQLite, revisiones de `DesignDocument`, operaciones y validación de laptop por dimensiones físicas.
-- Mockup técnico paramétrico GLB con metadatos de revisión, generado localmente.
-- Patrón SVG físico, PDF A4 tiled, PDF A0, control de 100 mm y metadatos de piezas; los componentes cambian las piezas de una revisión nueva.
-- Tech Pack PDF/XLSX: Summary, BOM, POM, Construction, Grading, Labels/Packaging, Material Evidence y Revision History. Los datos inciertos se marcan como pendientes.
-- Biblioteca documental segura en `data\library`; TXT, Markdown y PDF textual, FTS y citas.
-- LanceDB instalado en `data\lancedb`; BGE-M3 validado en CPU y usado para recuperación semántica local.
-- Rebuild LanceDB atómico y cancelable: cada índice se construye en tabla temporal con identidad estable SHA-256 por fragmento; el puntero SQLite cambia sólo al terminar y se retira la tabla anterior. Los resultados incluyen fuente, página, número e ID de fragmento.
-- Benchmark BGE-M3: 1.024 dimensiones, carga 3.31 s, consulta 0.69 s, RSS 1.94 GB. Peso principal SHA-256 verificado en `models\embeddings\bge-m3\model-provenance.json`.
-- Cola SQLite con exclusión de GPU, progreso/error/cancelación y herramientas MCP de consulta/cancelación.
-- MCP cerrado para diseños, RAG, mockup, patrones, Tech Pack, consentimiento y operador; sin shell ni acceso general al disco.
-- Consentimiento cloud por activo, propósito, proveedor, coste y auditoría. El modo local privado lo rechaza.
-- Studio Operator endurecido y aún desactivado por defecto: auditoría SQLite por sesión/acción, pausa durable al perder foco, reanudación explícita, banner nativo visible, atajo global `Ctrl+Alt+Pause` y confirmación de un solo uso (60 s) para exportar, imprimir, cloud o sobrescribir. La prueba automatizada simula la UI; queda pendiente probar físicamente banner/atajo en una sesión Windows supervisada antes de habilitarlo para uso real.
-- La UI usa `brief_analyze_local` al crear y analizar briefs; propaga componentes, materiales y medidas confirmadas sin inventar dimensiones. Para bolso muestra un campo de ancho × alto × espesor en mm.
-- Un bolso sin sus tres dimensiones físicas ahora no puede exportar mockup, patrón ni Tech Pack: la API y la UI lo bloquean explícitamente.
-- Al exportar un mockup, la UI carga el GLB real servido desde `artifacts` y sólo lo conserva en el visor mientras corresponde al mismo diseño y revisión. También ofrece descargas del último grupo de artefactos.
-- Studio ofrece FTS o BGE-M3, muestra procedencia del fragmento y permite iniciar/cancelar el rebuild semántico mientras informa su progreso.
-- Studio ya no es sólo visual: el asistente local conversacional convierte órdenes acotadas en operaciones/revisiones persistentes (componentes, materiales y medidas) y cada modo se guarda en el diseño. Híbrido y cloud conservan la barrera de consentimiento; no simulan proveedor ni envío.
-- La biblioteca privada del usuario quedó organizada en `KNOWLEDGE_BASE_STUDIO\01…06`, fuera de GitHub/Vercel; la API sólo importa desde allí. El plan de contexto y licencias está en `docs\KNOWLEDGE_BASE_PLAN.md`.
-- Rama `fashion-cad-studio` publicada en `Safagix/ai-projects`; contiene sólo código/documentación. `vercel.json` prepara el frontend SPA, pero un backend público persistente sigue siendo una decisión de despliegue separada.
-- Entrega reproducible documentada en `docs\MVP_DELIVERY.md`; `scripts\verify-mvp.ps1` corre pruebas, builds y el rebuild BGE-M3 real en un directorio aislado bajo `cache`.
+- Studio desktop React/Vite/Three.js conectado a FastAPI local: crear/seleccionar proyecto, analizar brief, cambios rápidos, modo persistente, chat local de operaciones, búsqueda RAG y exportaciones.
+- Chat local determinista y auditable: reconoce componentes, materiales y medidas de laptop; convierte cada cambio en una revisión. No representa un proveedor cloud ni transmite activos.
+- Dos familias: camiseta unisex y bolso laptop. El bolso bloquea GLB, patrón y Tech Pack hasta tener ancho, alto y espesor físicos.
+- Exportadores locales: mockup GLB técnico, SVG/PDF A4 tiled/PDF A0 con control de 100 mm y Tech Pack PDF/XLSX. Son borradores técnicos: faltan prueba física y revisión de taller.
+- SQLite FTS y LanceDB/BGE-M3 local con rebuild atómico, cancelable y sin duplicados. El índice previo se mantiene activo hasta el swap completo.
+- La reconstrucción semántica fue corregida para procesar cuatro fragmentos por lote; una prueba verifica secuencia `[4, 1]`.
+- Biblioteca privada organizada como `KNOWLEDGE_BASE_STUDIO\01…06`, ignorada por Git/Vercel. Tres libros textuales y documentación interna quedaron importados (933 fragmentos antes del OCR nuevo).
+- RapidOCR + ONNX Runtime + PyMuPDF están instalados dentro del entorno de FashionCAD. La importación OCR es explícita, local y registra página/confianza por fragmento; máximo 300 páginas por defecto. La corrida integral de 126 páginas se canceló sin escritura tras más de 15 min; no se declara indexada.
+- Operator cerrado y deshabilitado por defecto; su prueba automática no sustituye validación física de banner, foco y `Ctrl+Alt+Pause`.
+- GitHub: rama aislada `fashion-cad-studio` publicada en `Safagix/ai-projects`. Vercel está preparado para la SPA únicamente.
 
-## Pendiente por recurso externo, no simulado
+## Evidencia vigente
 
-| Componente | Bloqueo real | Próximo paso seguro |
+- Verificación integral: **21 passed** en `apps/api/tests`, MCP build, Studio build y rebuild BGE real aislado aprobados (siete warnings de deprecación upstream; warning no bloqueante de chunk Three.js 925.28 kB).
+- QA del navegador: chat local creó un bolso con medidas/componentes/material y habilitó exportación; el modo híbrido persistió como nueva revisión.
+- BGE-M3 previo: carga 3.31 s, consulta 0.69 s, vector 1024, RSS 1.94 GB.
+- RapidOCR verificó extracción local de primera página de los PDF escaneados; la importación completa debe comprobarse por fuente/fragmento/confianza antes de declararla terminada.
+
+## Operación
+
+```powershell
+Set-Location 'D:\Digital Lab\FashionCAD'
+.\scripts\run-api.ps1          # terminal 1
+.\scripts\run-web.ps1          # terminal 2
+```
+
+Para recarga de API: `./scripts/run-api.ps1 -Reload`.
+
+```powershell
+.\scripts\import-knowledge-base.ps1
+.\scripts\import-knowledge-base.ps1 -Ocr -MaxOcrPages 300
+.\scripts\verify-mvp.ps1
+```
+
+No correr OCR y BGE-M3 simultáneamente en esta PC de 16 GB RAM.
+
+## Pendiente o requiere decisión externa
+
+| Tema | Estado real | Próximo paso seguro |
 |---|---|---|
-| Qwen2.5-VL 3B Q4 | No hay runtime Ollama/llama.cpp instalado dentro de `D:` | Instalar runtime portable en `runtime`, descargar `qwen2.5vl:3b` al almacén de FashionCAD y medir VRAM/latencia |
-| SigLIP2 | Pesos no descargados | Descargar con licencia/checksum; indexar imágenes en LanceDB cuando CPU/GPU lo apruebe |
-| RapidOCR | Runtime/pesos no instalados | Añadir OCR de PDFs escaneados con página y confianza |
-| faster-whisper | Runtime/pesos no instalados | Añadir comandos de voz CPU INT8 con cola y prueba de latencia |
-| Blender headless | Blender no instalado en `runtime` | Instalar LTS portable y conectar render/GLB como motor opcional |
-| Cloud real y túnel MCP | Requiere claves/configuración del usuario | Configurar sólo después de revisar proveedor, coste y túnel saliente |
-| Validación de costura | Requiere impresión, modista/taller y muestra física | Medir cuadrado 100 ± 1 mm, cortar, coser y retroalimentar el patrón |
+| OCR de `Bag Design` | La corrida integral de 126 páginas se canceló sin fragmentos tras más de 15 min. | Agregar progreso/reanudación; no iniciar `Patternmaking` (848 páginas) sin reservar tiempo y límite explícito. |
+| Rebuild BGE completo | Lote 4 llegó a 12/933 en 63 s y fue cancelado, ~80 min estimados. | Optimizar/medir antes de un rebuild completo; FTS sigue disponible. |
+| Vercel público | Solo SPA preparada. API local, BGE y biblioteca privada no se pueden desplegar tal cual. | Elegir backend persistente, configurar CORS/identidad/almacenamiento; confirmar justo antes de publicar. |
+| Qwen-VL/SigLIP2/voz/Blender | No instalados ni simulados. | Preflight de licencia, espacio, RAM/VRAM y benchmark en `D:`. |
+| Producción industrial | No validada físicamente. | Imprimir control 100 ± 1 mm, cortar/coser y corregir con patronista/taller. |
 
-## Evidencia de calidad
+## Cierre requerido de este hito
 
-- API: 19 pruebas automatizadas pasadas.
-- MCP: compilación TypeScript correcta.
-- Studio web: compilación Vite correcta. El chunk diferido de Three.js mide 925.28 kB al incluir el cargador GLB; es funcional pero queda optimización de carga como tarea de rendimiento.
-- Rebuild BGE-M3 real: dos reconstrucciones consecutivas de un fragmento, búsqueda posterior y deduplicación comprobadas en 21.45 s dentro de `cache\delivery-verification`; no se modificó la biblioteca del usuario.
-- QA de Studio local: brief de bolso solicita las tres medidas físicas y el selector BGE-M3/búsqueda responde sin errores con biblioteca vacía. La UI es deliberadamente desktop (`min-width: 1100px`), no responsive móvil.
-- Espacio después de BGE-M3: 87.89 GB libres en `D:`. FashionCAD sigue por debajo del límite de 45 GB.
-
-## Autoevaluación
-
-| Eje | Nota | Evidencia y mejora |
-|---|---:|---|
-| Exactitud | 4/5 | Exportaciones, guardias y rebuild BGE real tienen evidencia; falta validación física del kill switch/overlay y de patrones. |
-| Completitud | 4/5 | El MVP local definido está entregable; Qwen-VL, SigLIP2, OCR, voz, Blender y cloud son extensiones explícitamente fuera de esta entrega. |
-| Claridad | 5/5 | `MVP_DELIVERY.md` separa arranque, verificación, aceptación manual y límites. |
-| Accionabilidad | 5/5 | `verify-mvp.ps1` deja una comprobación única y reproducible sin tocar datos de usuario. |
-| Concisión | 4/5 | La documentación separa visión, plan y estado; se podrá condensar cuando el MVP estabilice. |
-
-Puntaje global: **4.3/5**. El MVP local está listo para entregar tras ejecutar `scripts\verify-mvp.ps1`; el siguiente bloque opcional es runtime multimodal portable y su benchmark, sin confundirlo con una dependencia del MVP.
+1. Agregar progreso/reanudación si se decide OCR integral; mantener la importación explícita y auditable.
+2. Optimizar el rebuild BGE completo antes de consumir ~80 min de CPU.
+3. Confirmar que el commit más reciente esté enviado a `ai-projects/fashion-cad-studio` antes de seguir con otra fase.

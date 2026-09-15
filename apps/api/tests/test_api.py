@@ -148,17 +148,24 @@ def test_semantic_reindex_runs_as_a_job_and_rebuilds_without_duplicates(client: 
     from fashion_cad_api import main, vector_store
 
     class FakeEmbedder:
+        batches: list[int] = []
+
         def ensure_available(self) -> None:
             return None
 
         def embed_documents(self, texts: list[str]) -> list[list[float]]:
+            self.batches.append(len(texts))
             return [[float(index + 1), 0.5, 0.25] for index, _ in enumerate(texts)]
 
         def embed_query(self, _text: str) -> list[float]:
             return [1.0, 0.5, 0.25]
 
     monkeypatch.setattr(vector_store, "BgeM3Embedder", FakeEmbedder)
-    client.post("/api/rag/documents", json={"title": "Nylon", "content": "Nylon reciclado para bolso.", "source": "manual"})
+    for number in range(5):
+        client.post(
+            "/api/rag/documents",
+            json={"title": f"Nylon {number}", "content": f"Nylon reciclado para bolso {number}.", "source": "manual"},
+        )
 
     first = client.post("/api/rag/semantic/reindex")
     assert first.status_code == 202
@@ -171,7 +178,8 @@ def test_semantic_reindex_runs_as_a_job_and_rebuilds_without_duplicates(client: 
             break
         time.sleep(0.025)
     assert status["status"] == "completed", status
-    assert status["progress"] == status["total"] == 1
+    assert status["progress"] == status["total"] == 5
+    assert FakeEmbedder.batches == [4, 1]
 
     result = client.get("/api/rag/semantic/search", params={"query": "nylon bolso"})
     assert result.status_code == 200
@@ -188,8 +196,8 @@ def test_semantic_reindex_runs_as_a_job_and_rebuilds_without_duplicates(client: 
         time.sleep(0.025)
     assert status["status"] == "completed"
     state = main.repository.get_semantic_index()
-    assert state and state["source_count"] == 1
-    assert vector_store.LanceSemanticStore(table_name=state["table_name"]).count() == 1
+    assert state and state["source_count"] == 5
+    assert vector_store.LanceSemanticStore(table_name=state["table_name"]).count() == 5
 
 
 def test_queued_embedding_job_can_be_cancelled(client: TestClient) -> None:
@@ -204,6 +212,22 @@ def test_rag_fts_returns_source(client: TestClient) -> None:
     response = client.get("/api/rag/search", params={"query": "nylon reciclado"})
     assert response.status_code == 200
     assert response.json()[0]["source"] == "material-sheet.pdf"
+
+
+def test_rag_fts_returns_ocr_confidence_when_imported_with_ocr(client: TestClient) -> None:
+    from fashion_cad_api import main
+
+    main.repository.add_rag_document(
+        "Página OCR",
+        "Puntada de seguridad para bolso.",
+        "library/scan.pdf",
+        source_page=4,
+        chunk_number=1,
+        ocr_confidence=0.9234,
+    )
+    response = client.get("/api/rag/search", params={"query": "puntada seguridad"})
+    assert response.status_code == 200
+    assert response.json()[0]["ocr_confidence"] == 0.9234
 
 
 def test_rag_local_import_is_confined_to_library(client: TestClient) -> None:
@@ -221,6 +245,21 @@ def test_rag_local_import_is_confined_to_library(client: TestClient) -> None:
 
     escaped = client.post("/api/rag/import", json={"relative_path": "..\\secret.txt"})
     assert escaped.status_code == 422
+
+
+def test_rag_reimport_replaces_prior_chunks_from_the_same_source(client: TestClient) -> None:
+    from fashion_cad_api import main
+
+    library = settings.library_dir
+    library.mkdir(parents=True, exist_ok=True)
+    source = library / "reimport.md"
+    source.write_text("Nylon reciclado para el primer bolso.", encoding="utf-8")
+    assert client.post("/api/rag/import", json={"relative_path": "reimport.md"}).status_code == 201
+    source.write_text("RPET 600D para el segundo bolso.", encoding="utf-8")
+    assert client.post("/api/rag/import", json={"relative_path": "reimport.md"}).status_code == 201
+    rows = [row for row in main.repository.list_rag_documents() if row["source"] == "library/reimport.md"]
+    assert len(rows) == 1
+    assert "RPET" in rows[0]["content"]
 
 def test_rag_local_pdf_import_extracts_text(client: TestClient) -> None:
     from reportlab.pdfgen.canvas import Canvas

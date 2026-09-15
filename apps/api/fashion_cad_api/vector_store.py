@@ -12,6 +12,7 @@ from .config import settings
 BGE_MODEL_ID = "bge-m3"
 ACTIVE_INDEX_NAME = "rag_bge_m3"
 INDEX_TABLE_PREFIX = "rag_bge_m3_index_"
+SEMANTIC_BATCH_SIZE = 4
 
 
 class SemanticUnavailable(RuntimeError):
@@ -62,7 +63,7 @@ class BgeM3Embedder:
 
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
         result = self._load().encode_corpus(
-            texts, batch_size=1, max_length=1024, return_dense=True, return_sparse=False, return_colbert_vecs=False
+            texts, batch_size=min(SEMANTIC_BATCH_SIZE, len(texts)), max_length=1024, return_dense=True, return_sparse=False, return_colbert_vecs=False
         )
         return result["dense_vecs"].tolist()
 
@@ -122,24 +123,29 @@ class LanceSemanticStore:
             db.drop_table(table_name, ignore_missing=True)
         table = None
         try:
-            for number, row in enumerate(rows, start=1):
+            for offset in range(0, len(rows), SEMANTIC_BATCH_SIZE):
                 if should_cancel():
                     raise SemanticReindexCancelled("La reindexación fue cancelada.")
-                vector = embedder.embed_documents([row["content"]])[0]
-                record = {
-                    "chunk_id": stable_chunk_id(row),
-                    "title": row["title"],
-                    "source": row["source"],
-                    "source_page": row.get("source_page"),
-                    "chunk_number": row.get("chunk_number") or 1,
-                    "content": row["content"],
-                    "vector": vector,
-                }
+                batch = rows[offset:offset + SEMANTIC_BATCH_SIZE]
+                vectors = embedder.embed_documents([row["content"] for row in batch])
+                records = [
+                    {
+                        "chunk_id": stable_chunk_id(row),
+                        "title": row["title"],
+                        "source": row["source"],
+                        "source_page": row.get("source_page"),
+                        "chunk_number": row.get("chunk_number") or 1,
+                        "content": row["content"],
+                        "vector": vector,
+                    }
+                    for row, vector in zip(batch, vectors, strict=True)
+                ]
                 if table is None:
-                    table = db.create_table(table_name, data=[record])
+                    table = db.create_table(table_name, data=records)
                 else:
-                    table.add([record])
-                on_progress(number, len(rows))
+                    table.add(records)
+                for number in range(offset + 1, offset + len(records) + 1):
+                    on_progress(number, len(rows))
             return SemanticIndexBuild(table_name=table_name, source_count=len(rows))
         except Exception:
             db.drop_table(table_name, ignore_missing=True)

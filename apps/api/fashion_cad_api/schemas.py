@@ -136,6 +136,8 @@ class RagDocumentRequest(BaseModel):
 
 class RagImportRequest(BaseModel):
     relative_path: str = Field(min_length=1, max_length=300)
+    use_ocr: bool = False
+    max_ocr_pages: int = Field(default=300, ge=1, le=1_500)
 
 
 class RagResult(BaseModel):
@@ -145,6 +147,7 @@ class RagResult(BaseModel):
     score: float
     source_page: int | None = None
     chunk_number: int | None = None
+    ocr_confidence: float | None = None
     chunk_id: str | None = None
 
 

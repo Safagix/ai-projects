@@ -29,6 +29,6 @@ Los libros, PDFs e imágenes del usuario sirven para **recuperación local con c
 
 1. Copiar archivos propios a su categoría.
 2. Registrar metadatos mínimos: título, tipo, licencia/origen, fecha, idioma y producto.
-3. Importar los PDF textuales a la biblioteca local y ejecutar rebuild BGE-M3.
+3. Importar los PDF textuales a la biblioteca local (hasta 200 MB, 1.500 páginas y 8 millones de caracteres por archivo) y ejecutar rebuild BGE-M3.
 4. Revisar citas antes de usar material, POM o tolerancia en una exportación.
 5. Agregar OCR/visión sólo después de benchmark, licencia y preflight de espacio/RAM.

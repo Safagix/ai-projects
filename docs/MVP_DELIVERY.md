@@ -7,7 +7,7 @@ Fashion CAD Studio queda listo para correr **localmente en este equipo Windows**
 - Camiseta unisex regular y bolso para laptop, con revisiones inmutables y operaciones acotadas.
 - Análisis determinista de brief; el bolso exige ancho, alto y espesor físicos de la laptop antes de exportar.
 - Mockup GLB técnico vinculado a su diseño/revisión, SVG, PDF A4 tiled, PDF A0 y Tech Pack PDF/XLSX.
-- Biblioteca local TXT/Markdown/PDF textual con FTS y búsqueda semántica BGE-M3 en LanceDB.
+- Biblioteca privada TXT/Markdown/PDF con FTS y búsqueda semántica BGE-M3 en LanceDB. Los PDF escaneados se procesan con RapidOCR local sólo bajo solicitud explícita y guardan página/confianza.
 - El índice semántico se reconstruye como trabajo cancelable. Cada rebuild usa una tabla nueva, conserva el índice anterior durante la ejecución y cambia el puntero sólo al finalizar; no acumula duplicados entre rebuilds.
 - Studio web y MCP local con superficies limitadas; no exponen shell ni rutas arbitrarias.
 
@@ -44,7 +44,7 @@ Abrir `http://127.0.0.1:5173`. La documentación API queda en `http://127.0.0.1:
 
 1. Crear una camiseta o un bolso; para el bolso ingresar las tres medidas físicas requeridas.
 2. Exportar mockup, patrón y Tech Pack, y comprobar que las descargas pertenecen a la misma revisión mostrada.
-3. Importar un TXT/MD/PDF textual desde `data\library`, reconstruir el índice BGE-M3 desde el panel Knowledge y esperar el estado `completed`; comprobar una búsqueda semántica con fuente, página y fragmento.
+3. Importar un TXT/MD/PDF desde `KNOWLEDGE_BASE_STUDIO`, reconstruir el índice BGE-M3 desde el panel Knowledge y esperar el estado `completed`; comprobar una búsqueda semántica con fuente, página y fragmento. Para un escaneo, usar OCR explícito y revisar su confianza antes de tomar datos técnicos.
 4. Imprimir el patrón de prueba y medir el cuadrado de control: debe medir 100 ± 1 mm antes de cortar o coser.
 
 ## Límites que no se deben ocultar
@@ -52,4 +52,4 @@ Abrir `http://127.0.0.1:5173`. La documentación API queda en `http://127.0.0.1:
 - Esta entrega es local para el equipo configurado, no un instalador portable: Python/Node aún no están empaquetados bajo `runtime`.
 - Los patrones y el Tech Pack son borradores técnicos; necesitan prueba física y corrección de patronista/taller antes de producción.
 - Studio Operator permanece desactivado. Requiere una prueba Windows supervisada de foco, banner y `Ctrl+Alt+Pause` antes de habilitarlo con aplicaciones reales.
-- Qwen-VL, SigLIP2, OCR, voz, Blender, proveedores cloud y túnel MCP no se incluyen: requieren runtimes/pesos/credenciales que no están instalados y no fueron simulados.
+- Qwen-VL, SigLIP2, voz, Blender, proveedores cloud y túnel MCP no se incluyen: requieren runtimes/pesos/credenciales que no están instalados y no fueron simulados. RapidOCR sí quedó instalado y limitado al flujo local de PDF escaneado; no es un modelo de visión de producto.

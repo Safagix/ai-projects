@@ -278,7 +278,12 @@ async def add_rag_document(payload: RagDocumentRequest) -> dict[str, str]:
 @app.post("/api/rag/import", status_code=status.HTTP_201_CREATED)
 async def import_rag_document(payload: RagImportRequest) -> dict[str, str | int]:
     try:
-        result = ingest_local_file(payload.relative_path, repository)
+        result = ingest_local_file(
+            payload.relative_path,
+            repository,
+            use_ocr=payload.use_ocr,
+            max_ocr_pages=payload.max_ocr_pages,
+        )
     except IngestionError as exc:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
     return {

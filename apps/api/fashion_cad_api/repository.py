@@ -55,6 +55,7 @@ class Repository:
                     rag_row_id INTEGER PRIMARY KEY,
                     source_page INTEGER,
                     chunk_number INTEGER,
+                    ocr_confidence REAL,
                     FOREIGN KEY(rag_row_id) REFERENCES rag_documents(rowid)
                 );
                 CREATE TABLE IF NOT EXISTS jobs (
@@ -104,6 +105,7 @@ class Repository:
             self._ensure_column(connection, "jobs", "total", "INTEGER")
             self._ensure_column(connection, "jobs", "message", "TEXT")
             self._ensure_column(connection, "jobs", "error", "TEXT")
+            self._ensure_column(connection, "rag_document_metadata", "ocr_confidence", "REAL")
 
     @staticmethod
     def _ensure_column(connection: sqlite3.Connection, table: str, column: str, definition: str) -> None:
@@ -193,7 +195,14 @@ class Repository:
         return document
 
     def add_rag_document(
-        self, title: str, content: str, source: str, *, source_page: int | None = None, chunk_number: int | None = None
+        self,
+        title: str,
+        content: str,
+        source: str,
+        *,
+        source_page: int | None = None,
+        chunk_number: int | None = None,
+        ocr_confidence: float | None = None,
     ) -> int:
         with self.connect() as connection:
             cursor = connection.execute(
@@ -202,22 +211,33 @@ class Repository:
             )
             row_id = int(cursor.lastrowid)
             connection.execute(
-                "INSERT OR REPLACE INTO rag_document_metadata(rag_row_id, source_page, chunk_number) VALUES (?, ?, ?)",
-                (row_id, source_page, chunk_number),
+                "INSERT OR REPLACE INTO rag_document_metadata(rag_row_id, source_page, chunk_number, ocr_confidence) VALUES (?, ?, ?, ?)",
+                (row_id, source_page, chunk_number, ocr_confidence),
             )
         return row_id
+
+    def delete_rag_documents_by_source(self, source: str) -> int:
+        """Remove an imported source before replacement, avoiding repeated chunks."""
+        with self.connect() as connection:
+            rows = connection.execute("SELECT rowid FROM rag_documents WHERE source = ?", (source,)).fetchall()
+            row_ids = [int(row["rowid"]) for row in rows]
+            if row_ids:
+                placeholders = ",".join("?" for _ in row_ids)
+                connection.execute(f"DELETE FROM rag_document_metadata WHERE rag_row_id IN ({placeholders})", row_ids)
+            cursor = connection.execute("DELETE FROM rag_documents WHERE source = ?", (source,))
+        return int(cursor.rowcount)
 
     def list_rag_documents(self) -> list[dict[str, Any]]:
         with self.connect() as connection:
             rows = connection.execute(
-                "SELECT rag_documents.rowid AS id, title, content, source, source_page, chunk_number "
+                "SELECT rag_documents.rowid AS id, title, content, source, source_page, chunk_number, ocr_confidence "
                 "FROM rag_documents LEFT JOIN rag_document_metadata ON rag_row_id = rag_documents.rowid ORDER BY rag_documents.rowid"
             ).fetchall()
         return [dict(row) for row in rows]
     def search_rag(self, query: str, limit: int = 8) -> list[dict[str, Any]]:
         with self.connect() as connection:
             rows = connection.execute(
-                "SELECT rag_documents.title, rag_documents.source, source_page, chunk_number, "
+                "SELECT rag_documents.title, rag_documents.source, source_page, chunk_number, ocr_confidence, "
                 "snippet(rag_documents, 1, '[', ']', '…', 18) AS excerpt, bm25(rag_documents) AS score "
                 "FROM rag_documents LEFT JOIN rag_document_metadata ON rag_row_id = rag_documents.rowid "
                 "WHERE rag_documents MATCH ? ORDER BY score LIMIT ?",
