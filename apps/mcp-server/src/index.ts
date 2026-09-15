@@ -28,9 +28,13 @@ server.tool('project_create', 'Crea un diseño local. Para laptop_bag, pedir med
   name: z.string().min(2), product_type: z.enum(['upper_garment', 'laptop_bag']), description: z.string().default(''), mode: z.enum(['local_private', 'hybrid', 'cloud_creative']).default('local_private'),
 }, async (input) => text(await api('/api/projects', 'POST', input)))
 
-server.tool('design_apply_change', 'Aplica una operación reversible al diseño.', {
-  project_id: z.string().uuid(), kind: z.enum(['add_component', 'remove_component', 'set_materials', 'set_measurement', 'set_description']), value: z.union([z.string(), z.number(), z.array(z.string())]), note: z.string().default(''),
+server.tool('design_apply_change', 'Aplica una operación reversible al diseño. No envía activos a cloud.', {
+  project_id: z.string().uuid(), kind: z.enum(['add_component', 'remove_component', 'set_materials', 'set_measurement', 'set_description', 'set_mode']), value: z.union([z.string(), z.number(), z.array(z.string())]), note: z.string().default(''),
 }, async ({ project_id, ...operation }) => text(await api(`/api/projects/${project_id}/operations`, 'POST', operation)))
+
+server.tool('design_chat_local', 'Interpreta una orden en español y aplica sólo cambios locales auditables. Para bolso, exige medidas reales en mm antes de exportar.', {
+  project_id: z.string().uuid(), message: z.string().min(2).max(4_000),
+}, async ({ project_id, ...payload }) => text(await api(`/api/projects/${project_id}/assistant`, 'POST', payload)))
 server.tool('cloud_consent_record', 'Registra consentimiento informado; no envía el activo ni llama al proveedor.', {
   project_id: z.string().uuid(), asset_id: z.string().min(1).max(200).regex(/^[A-Za-z0-9._ -]+$/), provider: z.enum(['openai', 'deepseek', 'trellis_provider']), purpose: z.string().min(3).max(500), estimated_cost_usd: z.number().min(0).max(1000), approved: z.boolean(),
 }, async ({ project_id, ...payload }) => text(await api(`/api/projects/${project_id}/cloud-consents`, 'POST', payload)))
@@ -43,8 +47,8 @@ server.tool('job_cancel', 'Cancela un trabajo en cola o ejecución antes de que 
 server.tool('rag_semantic_search', 'Busca en LanceDB con BGE-M3 local cuando el benchmark/modelo estén disponibles.', { query: z.string().min(2) }, async ({ query }) => text(await api(`/api/rag/semantic/search?query=${encodeURIComponent(query)}`)))
 server.tool('rag_semantic_reindex', 'Encola un rebuild atómico de la biblioteca con BGE-M3 local. La búsqueda mantiene el índice anterior hasta completarse; consultar job_status. No llama cloud.', {}, async () => text(await api('/api/rag/semantic/reindex', 'POST')))
 server.tool('rag_search', 'Busca conocimiento local indexado.', { query: z.string().min(2) }, async ({ query }) => text(await api(`/api/rag/search?query=${encodeURIComponent(query)}`)))
-server.tool('rag_import_local_file', 'Indexa un TXT, Markdown o PDF desde data\\library. No acepta rutas fuera de la biblioteca local.', {
-  relative_path: z.string().min(1).max(300),
+server.tool('rag_import_local_file', 'Indexa TXT, Markdown o PDF desde KNOWLEDGE_BASE_STUDIO. No acepta rutas fuera de la biblioteca. OCR es explícito, local y puede tardar.', {
+  relative_path: z.string().min(1).max(300), use_ocr: z.boolean().default(false), max_ocr_pages: z.number().int().min(1).max(1_500).default(300),
 }, async (input) => text(await api('/api/rag/import', 'POST', input)))
 
 server.tool('studio_session_start', 'Activa un operador visible y temporal. Solo para ventanas de Fashion CAD.', {

@@ -59,6 +59,10 @@ Después, iniciar **Reconstruir índice semántico** desde Studio. No correr OCR
 
 La API local completa, BGE-M3 y `KNOWLEDGE_BASE_STUDIO` **no se despliegan en Vercel**: el modelo pesa más que el límite de función y la biblioteca es privada. Para una web funcional pública hace falta elegir y configurar un backend persistente separado; el Studio local sigue funcionando en `127.0.0.1` sin subir datos.
 
+## Conectar una IA por MCP
+
+El conector local MCP está listo para clientes compatibles. Iniciar API, compilar MCP y usar la plantilla [mcp-configs/fashion-cad.local.mcp.json](mcp-configs/fashion-cad.local.mcp.json), cambiando la ruta de ejemplo. La guía completa, incluyendo el límite entre MCP local y un conector remoto para ChatGPT, está en [docs/MCP_CONNECT.md](docs/MCP_CONNECT.md).
+
 ## Seguridad
 
 El Studio Operator está desactivado por defecto. Aun al habilitarse, solamente podrá actuar en una sesión visible y en ventanas autorizadas del estudio. No expone shell genérico ni acceso a carpetas personales.

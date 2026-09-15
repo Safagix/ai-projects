@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "fashion-cad-local": {
+      "command": "powershell.exe",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "D:\\YOUR_FASHION_CAD_FOLDER\\scripts\\run-mcp.ps1"
+      ],
+      "env": {
+        "FASHION_CAD_API_URL": "http://127.0.0.1:8000"
+      }
+    }
+  }
+}

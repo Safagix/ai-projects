@@ -31,6 +31,7 @@ apps/api/fashion_cad_api/    FastAPI, SQLite, asistente local, RAG, BGE/LanceDB,
 apps/api/tests/              pruebas API
 apps/studio-web/             React/Vite/Three.js
 apps/mcp-server/             MCP stdio TypeScript cerrado
+mcp-configs/                 plantilla de conexión MCP local por usuario
 scripts/                     arranque, importación, benchmark y verificación
 KNOWLEDGE_BASE_STUDIO/       biblioteca privada (ignorada por Git)
 data/sqlite + data/lancedb/  estado local del usuario (ignorado por Git)
@@ -44,6 +45,7 @@ Piezas clave:
 - `ingestion.py`: sólo lee paths relativos confinados a `KNOWLEDGE_BASE_STUDIO`; TXT/MD/PDF hasta 200 MB, 1.500 páginas y 8M caracteres. OCR sólo bajo solicitud explícita.
 - `knowledge_cli.py` y `scripts\import-knowledge-base.ps1`: importación local repetible, reemplaza la fuente previa y evita duplicados.
 - `vector_store.py`: BGE-M3 CPU + LanceDB, reconstrucción temporal y swap atómico; procesa 4 fragmentos por lote, cancelable entre lotes.
+- `scripts\run-mcp.ps1` + `mcp-configs\fashion-cad.local.mcp.json`: arranque y plantilla para clientes MCP locales; `docs\MCP_CONNECT.md` separa el conector local del remoto autenticado.
 
 ## Biblioteca privada y contexto IA
 
@@ -60,7 +62,7 @@ KNOWLEDGE_BASE_STUDIO/
 ```
 
 - Es privada, ignorada mediante `.gitignore`; comprobar con `git check-ignore` antes de cualquier `git add`.
-- Libros con capa textual ya importados: `Fashion Bags`, `Reinvention Sewing`, `The Fashion Design Toolkit`, más documentación interna; la última cuenta conocida era **933 fragmentos** antes de añadir OCR.
+- Fuentes textuales ya importadas: `Fashion Bags`, `Reinvention Sewing`, `The Fashion Design Toolkit`, `Computer-aided pattern design`, `Sustainable Fashion and Textiles` y documentación interna. La cuenta actual es **2.029 fragmentos FTS de 14 fuentes**; tres PDFs escaneados continúan pendientes de OCR explícito.
 - RapidOCR 3.9.2 + ONNX Runtime + PyMuPDF quedaron instalados en `environments\api-venv`, con sus modelos dentro de `D:`. Un render de las primeras páginas de los dos scans produjo texto. El intento de OCR completo de `Bag Design` fue cancelado sin escribir fragmentos al superar 15 minutos; no confundir la prueba de página con una indexación completa.
 - `Bag Design...pdf` tiene 126 páginas y `Patternmaking...pdf` 848. OCR exige un máximo explícito (300 por defecto) para no monopolizar CPU/RAM. Para el segundo usar, por ejemplo, `-Ocr -MaxOcrPages 848` sólo cuando haya tiempo y sin BGE activo.
 - El plan corregido de licencias/datos/materiales/moldes/fine-tuning está en `docs\KNOWLEDGE_BASE_PLAN.md`. Los libros crean RAG, no “entrenan” un modelo automáticamente. Fine-tuning requiere derechos, pares entrada/salida y evaluación separada.
@@ -89,6 +91,7 @@ Luego reconstruir BGE desde Studio o `POST /api/rag/semantic/reindex`. No correr
 - Vercel: `vercel.json` y `.env.example` preparan solamente la SPA. `VITE_FASHION_CAD_API` debe ser una URL HTTPS de API pública y nunca un secreto.
 - No desplegar BGE-M3, SQLite local ni `KNOWLEDGE_BASE_STUDIO` a Vercel. El modelo excede el límite de una función Vercel; una web pública funcional requiere backend persistente separado y CORS/identidad/almacenamiento decididos.
 - La CLI Vercel no estaba autenticada. Si se va a publicar desde el navegador, pedir confirmación al usuario **justo antes** de pulsar Deploy e indicar que se hará pública la SPA/código, no la biblioteca o modelos.
+- MCP local funciona hoy por stdio. ChatGPT requiere un MCP remoto autenticado y no puede alcanzar `localhost`; no publicar un relay anónimo. Elegir identidad/base de datos y aislamiento por usuario antes de crear `/mcp` remoto.
 
 ## Verificación y entrega
 

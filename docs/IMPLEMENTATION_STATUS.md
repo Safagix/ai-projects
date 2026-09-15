@@ -8,10 +8,11 @@
 - Exportadores locales: mockup GLB técnico, SVG/PDF A4 tiled/PDF A0 con control de 100 mm y Tech Pack PDF/XLSX. Son borradores técnicos: faltan prueba física y revisión de taller.
 - SQLite FTS y LanceDB/BGE-M3 local con rebuild atómico, cancelable y sin duplicados. El índice previo se mantiene activo hasta el swap completo.
 - La reconstrucción semántica fue corregida para procesar cuatro fragmentos por lote; una prueba verifica secuencia `[4, 1]`.
-- Biblioteca privada organizada como `KNOWLEDGE_BASE_STUDIO\01…06`, ignorada por Git/Vercel. Tres libros textuales y documentación interna quedaron importados (933 fragmentos antes del OCR nuevo).
+- Biblioteca privada organizada como `KNOWLEDGE_BASE_STUDIO\00…06`, ignorada por Git/Vercel. Catorce fuentes textuales quedaron importadas en FTS (2.029 fragmentos); tres PDF escaneados permanecen pendientes de OCR explícito.
 - RapidOCR + ONNX Runtime + PyMuPDF están instalados dentro del entorno de FashionCAD. La importación OCR es explícita, local y registra página/confianza por fragmento; máximo 300 páginas por defecto. La corrida integral de 126 páginas se canceló sin escritura tras más de 15 min; no se declara indexada.
 - Operator cerrado y deshabilitado por defecto; su prueba automática no sustituye validación física de banner, foco y `Ctrl+Alt+Pause`.
 - GitHub: rama aislada `fashion-cad-studio` publicada en `Safagix/ai-projects`. Vercel está preparado para la SPA únicamente.
+- Conector MCP local preparado para clientes compatibles: plantilla por usuario, script de arranque, chat local, cambios auditables, RAG y exportaciones. Un MCP remoto para ChatGPT queda bloqueado correctamente hasta tener identidad, backend persistente y autorización por usuario.
 
 ## Evidencia vigente
 
@@ -45,6 +46,7 @@ No correr OCR y BGE-M3 simultáneamente en esta PC de 16 GB RAM.
 | OCR de `Bag Design` | La corrida integral de 126 páginas se canceló sin fragmentos tras más de 15 min. | Agregar progreso/reanudación; no iniciar `Patternmaking` (848 páginas) sin reservar tiempo y límite explícito. |
 | Rebuild BGE completo | Lote 4 llegó a 12/933 en 63 s y fue cancelado, ~80 min estimados. | Optimizar/medir antes de un rebuild completo; FTS sigue disponible. |
 | Vercel público | Solo SPA preparada. API local, BGE y biblioteca privada no se pueden desplegar tal cual. | Elegir backend persistente, configurar CORS/identidad/almacenamiento; confirmar justo antes de publicar. |
+| MCP remoto | El MCP stdio local está listo; ChatGPT sólo conecta MCP remoto. | Elegir identidad/base de datos, implementar Streamable HTTP autenticado y aislar datos por usuario. |
 | Qwen-VL/SigLIP2/voz/Blender | No instalados ni simulados. | Preflight de licencia, espacio, RAM/VRAM y benchmark en `D:`. |
 | Producción industrial | No validada físicamente. | Imprimir control 100 ± 1 mm, cortar/coser y corregir con patronista/taller. |
 
