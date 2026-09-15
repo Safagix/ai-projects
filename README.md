@@ -35,6 +35,12 @@ Copy-Item .env.example .env
 
 Abrí `http://127.0.0.1:5173`. La API se documenta en `http://127.0.0.1:8000/docs`.
 
+## Vercel
+
+`vercel.json` deja preparada la interfaz Vite para desplegarse como SPA. En Vercel, configurar `VITE_FASHION_CAD_API` con la URL HTTPS de un backend API público separado y volver a desplegar. Esa variable es visible por el navegador: nunca colocar tokens, claves ni rutas locales allí.
+
+La API local completa, BGE-M3 y `KNOWLEDGE_BASE_STUDIO` **no se despliegan en Vercel**: el modelo pesa más que el límite de función y la biblioteca es privada. Para una web funcional pública hace falta elegir y configurar un backend persistente separado; el Studio local sigue funcionando en `127.0.0.1` sin subir datos.
+
 ## Seguridad
 
 El Studio Operator está desactivado por defecto. Aun al habilitarse, solamente podrá actuar en una sesión visible y en ventanas autorizadas del estudio. No expone shell genérico ni acceso a carpetas personales.

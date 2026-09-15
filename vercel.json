@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "npm --prefix apps/studio-web ci",
+  "buildCommand": "npm --prefix apps/studio-web run build",
+  "outputDirectory": "apps/studio-web/dist",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

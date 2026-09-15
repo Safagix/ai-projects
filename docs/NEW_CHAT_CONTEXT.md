@@ -40,9 +40,10 @@ Regla física crucial: “laptop de 16 pulgadas” no basta. Exigir ancho, alto 
 
 ## 3. Estado real del repositorio
 
-- Repositorio Git independiente inicializado en `D:\Digital Lab\FashionCAD`, rama `main`, sin commits. Todos los archivos siguen nuevos/no confirmados. **No ejecutar reset/clean/checkout destructivo.** Revisar `git status --short` antes de editar.
+- Repositorio Git independiente inicializado en `D:\Digital Lab\FashionCAD`, rama `fashion-cad-studio`, con commit inicial `7bb867a` publicado en `https://github.com/Safagix/ai-projects` como rama aislada. No ejecutar reset/clean/checkout destructivo. Revisar `git status --short` antes de editar.
 - No hay servidores API/Vite activos al cierre de este checkpoint.
 - Se usó el Python del sistema para crear `environments\api-venv`; las dependencias, cachés y pesos del proyecto están en `D:`. Aún no existe distribución portable completa de Python/Node bajo `runtime`; es una deuda de empaquetado, no una capacidad terminada.
+- `vercel.json` despliega sólo la SPA. Vercel no puede alojar BGE-M3/local SQLite/biblioteca privada como backend completo: la función Python tiene límite de bundle de 500 MB y el peso BGE excede 2 GB. Requiere backend persistente separado y `VITE_FASHION_CAD_API` antes de presentar una web pública funcional.
 
 ### Estructura principal
 

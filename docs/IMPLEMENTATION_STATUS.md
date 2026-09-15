@@ -21,6 +21,7 @@
 - Studio ofrece FTS o BGE-M3, muestra procedencia del fragmento y permite iniciar/cancelar el rebuild semántico mientras informa su progreso.
 - Studio ya no es sólo visual: el asistente local conversacional convierte órdenes acotadas en operaciones/revisiones persistentes (componentes, materiales y medidas) y cada modo se guarda en el diseño. Híbrido y cloud conservan la barrera de consentimiento; no simulan proveedor ni envío.
 - La biblioteca privada del usuario quedó organizada en `KNOWLEDGE_BASE_STUDIO\01…06`, fuera de GitHub/Vercel; la API sólo importa desde allí. El plan de contexto y licencias está en `docs\KNOWLEDGE_BASE_PLAN.md`.
+- Rama `fashion-cad-studio` publicada en `Safagix/ai-projects`; contiene sólo código/documentación. `vercel.json` prepara el frontend SPA, pero un backend público persistente sigue siendo una decisión de despliegue separada.
 - Entrega reproducible documentada en `docs\MVP_DELIVERY.md`; `scripts\verify-mvp.ps1` corre pruebas, builds y el rebuild BGE-M3 real en un directorio aislado bajo `cache`.
 
 ## Pendiente por recurso externo, no simulado

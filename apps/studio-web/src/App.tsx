@@ -40,7 +40,7 @@ export default function App() {
   }
   useEffect(() => { void refresh() }, [])
 
-  const missingText = useMemo(() => active?.missing.length ? `Falta confirmar: ${active.missing.join(', ')}` : 'Datos técnicos completos para exportar.', [active])
+  const missingText = useMemo(() => !active ? 'Creá un diseño o escribí una instrucción para empezar.' : active.missing.length ? `Falta confirmar: ${active.missing.join(', ')}` : 'Datos técnicos completos para exportar.', [active])
   const exportedMockupUrl = mockup && active && mockup.designId === active.id && mockup.revision === active.revision ? mockup.url : null
   const bagReadyForExport = active?.product_type !== 'laptop_bag' || active.missing.length === 0
 
