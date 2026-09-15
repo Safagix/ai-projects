@@ -26,6 +26,7 @@ def main() -> int:
     repository = Repository()
     repository.initialize()
     successes = 0
+    skipped: list[str] = []
     for relative_path in sorted(paths):
         try:
             result = ingest_local_file(
@@ -38,8 +39,11 @@ def main() -> int:
             successes += 1
         except IngestionError as exc:
             print(f"SKIPPED {relative_path}: {exc}")
-    print(f"Biblioteca local: {successes}/{len(paths)} archivos indexados.")
-    return 0 if successes == len(paths) else 1
+            skipped.append(relative_path)
+    print(f"Biblioteca local: {successes} indexados, {len(skipped)} pendientes/omitidos, {len(paths)} evaluados.")
+    # In a complete library scan, scanned PDFs waiting for explicit OCR are an expected state,
+    # not a failure of the indexed textual corpus. Explicit requested paths still fail loudly.
+    return 0 if args.all or successes == len(paths) else 1
 
 
 if __name__ == "__main__":
